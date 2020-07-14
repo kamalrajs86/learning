@@ -1,0 +1,174 @@
+
+
+grant all privileges on database SFPRO to role sf_pro_role;
+
+grant ownership on all tables in schema SFPRO.WIP_SCH to role sf_pro_role copy current grants;
+
+show grants to role sysadmin;
+show grants to role securityadmin;
+
+
+
+
+grant usage
+  on database SFPRO
+  to role sf_pro_role;
+
+grant all
+  on schema SFPRO.WIP_SCH
+  to role sf_pro_role;
+
+grant usage
+  on warehouse Compute_wh
+  to role sf_pro_role;
+  
+ grant role sf_pro_role
+   to user kamalrajs;
+   
+   
+use role sf_pro_role; 
+use Database SFPRO;
+use warehouse Compute_wh;
+use schema WIP_SCH;
+ 
+create or replace table mytable (amount number);
+
+insert into mytable values(1);
+select * from mytable;
+ 
+show tables like 'mytable';
+
+desc table mytable;
+
+#stage creation
+
+CREATE STAGE "SFPRO"."WIP_SCH".sfpro_wip_stage COMMENT = 'sfpro_wip_stage';
+
+grant all
+  on stage sfpro_wip_stage
+  to role sf_pro_role;
+
+list @SFPRO_WIP_STAGE;
+
+show stages;
+
+CREATE FILE FORMAT "SFPRO"."WIP_SCH".SF_PRO_FILE_FORMAT_CSV TYPE = 'CSV' COMPRESSION = 'GZIP' FIELD_DELIMITER = ',' RECORD_DELIMITER = '\n' SKIP_HEADER = 0 FIELD_OPTIONALLY_ENCLOSED_BY = 'NONE' TRIM_SPACE = FALSE ERROR_ON_COLUMN_COUNT_MISMATCH = TRUE ESCAPE = 'NONE' ESCAPE_UNENCLOSED_FIELD = '\134' DATE_FORMAT = 'AUTO' TIMESTAMP_FORMAT = 'AUTO' NULL_IF = ('\\N');
+
+#create internal table with internal stage.
+
+create or replace table EMPDETAILS1
+( Firstname VARCHAR,
+ Lastname VARCHAR,
+ Street VARCHAR,
+ City VARCHAR,
+ State VARCHAR,
+ Zipcode Number
+);
+
+copy into EMPDETAILS1 from @SFPRO_WIP_STAGE/sf_file_test3.csv.gz FILE_FORMAT = (FORMAT_NAME = SF_PRO_FILE_FORMAT_CSV TYPE = CSV COMPRESSION = GZIP) ON_ERROR = CONTINUE;
+
+select * from EMPDETAILS1;
+
+##unloading
+
+copy into @mystage/unload/ from mytable;
+
+#Create Internal table with external stage:
+
+s3://kamal-snowflake-externalstage/
+
+list @SF_EXTERNAL_STAGE;
+
+create or replace table EXT_EMPDETAILS1
+( Firstname VARCHAR,
+ Lastname VARCHAR,
+ Street VARCHAR,
+ City VARCHAR,
+ State VARCHAR,
+ Zipcode Number
+);
+
+copy into EXT_EMPDETAILS1 from @SF_EXTERNAL_STAGE/sf_file_test3.csv FILE_FORMAT = (FORMAT_NAME = SF_PRO_FILE_FORMAT_CSV TYPE = CSV COMPRESSION = NONE) ON_ERROR = CONTINUE;
+
+select * from EXT_EMPDETAILS1;
+
+## stored procedure
+
+create or replace procedure nik_proc(N1 float, N2 float)
+ returns float
+ language javascript
+ as
+ $$
+    if (N1>N2)  {return N1} else {return N2+N1}
+ $$
+ ;
+
+call nik_proc(6.98,90.87);
+
+##create external table internal stage without column
+
+create or replace external table EXT_TB_INT_STG_WOC_EMP with location = @SFPRO_WIP_STAGE/sf_file_test3.csv.gz FILE_FORMAT = (FORMAT_NAME = SF_PRO_FILE_FORMAT_CSV TYPE = CSV COMPRESSION = NONE);
+
+select * from EXT_TB_INT_STG_WOC_EMP;
+
+
+##create external table External stage without column
+
+create or replace external table EXT_TB_EXT_STG_WOC_EMP with location = @SF_EXTERNAL_STAGE FILE_FORMAT = (FORMAT_NAME = SF_PRO_FILE_FORMAT_CSV TYPE = CSV COMPRESSION = NONE);
+
+select * from EXT_TB_EXT_STG_WOC_EMP;
+
+##create external table External stage with column
+
+create or replace external table EXT_TB_EXT_STG_WITHCOL_EMP 
+(firstname varchar as (value:c1::varchar),
+ lastname varchar as (value:c2::varchar),
+ street_address varchar as (value:c3::varchar),
+ city varchar as (value:c4::varchar),
+ state varchar as (value:c5::varchar),
+ zip varchar as (value:c6::varchar)
+)
+with location = @SF_EXTERNAL FILE_FORMAT = (FORMAT_NAME = SF_PRO_FILE_FORMAT_CSV TYPE = CSV COMPRESSION = NONE);
+
+select * from EXT_TB_EXT_STG_WITHCOL_EMP;
+
+#############
+
+
+#snowpipe
+
+use role sf_pro_role;
+use database SFPRO;
+
+create or replace stage SFPRO.WIP_SCH.snowstage
+    url='s3://kamal-snowflake-snowpipe/'
+    credentials = (AWS_KEY_ID = 'AKIAITNEQEXEKDHYL7PQ' AWS_SECRET_KEY = 'LG+MrLbceQbJl9dGCbLHfRcbIWVpdcPodlckbeWd' );
+show stages;
+
+create or replace table SFPRO.WIP_SCH.snowpipe_tb(jtext variant);
+show tables;
+
+###Clone
+
+select * from EMPDETAILS1;
+
+create table EMPDETAILS_CL CLONE EMPDETAILS1;
+select * from EMPDETAILS_CL;
+
+
+##timetravel
+select * from EMPDETAILS1;
+select * from EMPDETAILS1 at(offset => -60*15); 
+
+select * from EMPDETAILS1 before(statement => '01956fec-019b-b24f-001e-3e0300017042');
+
+select * from my_table at(timestamp => 'Mon, 01 May 2015 16:20:00 -0700'::timestamp);
+
+select current_time
+
+show parameters;
+show global accounts;
+SHOW REPLICATION ACCOUNTS;
+SHOW VARIABLES session;
+
+
