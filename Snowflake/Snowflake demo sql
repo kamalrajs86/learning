@@ -7,9 +7,6 @@ grant ownership on all tables in schema SFPRO.WIP_SCH to role sf_pro_role copy c
 show grants to role sysadmin;
 show grants to role securityadmin;
 
-
-
-
 grant usage
   on database SFPRO
   to role sf_pro_role;
@@ -105,7 +102,7 @@ create or replace procedure nik_proc(N1 float, N2 float)
 
 call nik_proc(6.98,90.87);
 
-##create external table internal stage without column
+##create external table internal stage without column - Not possibble
 
 create or replace external table EXT_TB_INT_STG_WOC_EMP with location = @SFPRO_WIP_STAGE/sf_file_test3.csv.gz FILE_FORMAT = (FORMAT_NAME = SF_PRO_FILE_FORMAT_CSV TYPE = CSV COMPRESSION = NONE);
 
@@ -148,6 +145,18 @@ show stages;
 create or replace table SFPRO.WIP_SCH.snowpipe_tb(jtext variant);
 show tables;
 
+create or replace pipe SFPRO.WIP_SCH.snowpipe_pipe auto_ingest=true as
+    copy into SFPRO.WIP_SCH.snowpipe_tb
+    from @SFPRO.WIP_SCH.snowstage
+    file_format = (type = 'JSON');
+show pipes;
+
+select * from  SFPRO.WIP_SCH.snowpipe_tb;
+
+##arn:aws:sqs:us-east-1:077205892945:sf-snowpipe-AIDARD6OUN5IY5AS6BFRN-KjMcJVpAfTsKgecw1eTrZw
+
+
+
 ###Clone
 
 select * from EMPDETAILS1;
@@ -171,4 +180,27 @@ show global accounts;
 SHOW REPLICATION ACCOUNTS;
 SHOW VARIABLES session;
 
+########Semi structured 
+
+
+create or replace table JSON_EMPDETAILS1
+( Details VARIANT
+);
+
+#put file:///Users/kamalrajselvaraj/sf_file_test.json @SFPRO_WIP_STAGE;
+
+copy into JSON_EMPDETAILS1 from @SFPRO_WIP_STAGE/sf_file_test.json FILE_FORMAT = (type = 'JSON' strip_outer_array = true) ON_ERROR = CONTINUE;
+
+select * from JSON_EMPDETAILS1;
+
+select a.v, b.key, b.value from pets a,lateral flatten(input => a.v) b
+where b.value like '%dog%';
+
+select a.Details, b.key, b.value
+from JSON_EMPDETAILS1 a, lateral flatten(input => a.Details) b;
+
+
+####Information Schema##
+
+select * from SFPRO.information_schema.tables;
 
