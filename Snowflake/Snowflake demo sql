@@ -132,30 +132,6 @@ select * from EXT_TB_EXT_STG_WITHCOL_EMP;
 #############
 
 
-#snowpipe
-
-use role sf_pro_role;
-use database SFPRO;
-
-create or replace stage SFPRO.WIP_SCH.snowstage
-    url='s3://kamal-snowflake-snowpipe/'
-    credentials = (AWS_KEY_ID = 'AKIAITNEQEXEKDHYL7PQ' AWS_SECRET_KEY = 'LG+MrLbceQbJl9dGCbLHfRcbIWVpdcPodlckbeWd' );
-show stages;
-
-create or replace table SFPRO.WIP_SCH.snowpipe_tb(jtext variant);
-show tables;
-
-create or replace pipe SFPRO.WIP_SCH.snowpipe_pipe auto_ingest=true as
-    copy into SFPRO.WIP_SCH.snowpipe_tb
-    from @SFPRO.WIP_SCH.snowstage
-    file_format = (type = 'JSON');
-show pipes;
-
-select * from  SFPRO.WIP_SCH.snowpipe_tb;
-
-##arn:aws:sqs:us-east-1:077205892945:sf-snowpipe-AIDARD6OUN5IY5AS6BFRN-KjMcJVpAfTsKgecw1eTrZw
-
-
 
 ###Clone
 
@@ -182,6 +158,7 @@ SHOW VARIABLES session;
 
 ########Semi structured 
 
+drop table JSON_EMPDETAILS1;
 
 create or replace table JSON_EMPDETAILS1
 ( Details VARIANT
@@ -193,14 +170,47 @@ copy into JSON_EMPDETAILS1 from @SFPRO_WIP_STAGE/sf_file_test.json FILE_FORMAT =
 
 select * from JSON_EMPDETAILS1;
 
+list @SFPRO_WIP_STAGE;
+
 select a.v, b.key, b.value from pets a,lateral flatten(input => a.v) b
 where b.value like '%dog%';
 
-select a.Details, b.key, b.value
+select  b.key, b.value
 from JSON_EMPDETAILS1 a, lateral flatten(input => a.Details) b;
 
 
 ####Information Schema##
 
 select * from SFPRO.information_schema.tables;
+
+#snowpipe
+
+##Create Pipe
+##Get SQS ARN from show pipes
+##Create stage in S3 and Create event in it.
+##Drop files in s3, check SF table.
+
+use role sf_pro_role;
+use database SFPRO;
+
+create or replace stage SFPRO.WIP_SCH.snowstage
+    url='s3://kamal-snowflake-snowpipe/'
+    credentials = (AWS_KEY_ID = '' AWS_SECRET_KEY = '' );
+show stages;
+
+create or replace table SFPRO.WIP_SCH.snowpipe_tb(jtext variant);
+show tables;
+
+create or replace pipe SFPRO.WIP_SCH.snowpipe_pipe auto_ingest=true as
+    copy into SFPRO.WIP_SCH.snowpipe_tb
+    from @SFPRO.WIP_SCH.snowstage
+    file_format = (type = 'JSON');
+show pipes;
+
+select * from  SFPRO.WIP_SCH.snowpipe_tb;
+
+##arn:aws:sqs:us-east-1:077205892945:sf-snowpipe-AIDARD6OUN5IY5AS6BFRN-KjMcJVpAfTsKgecw1eTrZw
+
+
+
 
