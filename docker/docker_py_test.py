@@ -12,7 +12,7 @@ yr.close()
 
 con = snowflake.connector.connect(
                 user="KAMALRAJS",
-                password="Inautix$1",
+                password="",
                 account="sla35871.us-east-1",
                 warehouse="COMPUTE_WH",
                 database="SFPRO",
