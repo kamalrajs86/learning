@@ -265,24 +265,154 @@ else:
 finally:
     print("anycase execute try/except")
 
-def dfs(graph, start, visited=None):
-    if visited is None:
-        visited = set()
-    visited.add(start)
-
-    print(start)
-
-    for next in graph[start] - visited:
-        dfs(graph, next, visited)
-    return visited
 
 
-graph = {'0': set(['1', '2']),
-         '1': set(['0', '3', '4']),
-         '2': set(['0']),
-         '3': set(['1']),
-         '4': set(['2', '3'])}
+K = [[1,2,3],
+     [4,5,6],
+     [7,8,9]]
 
-dfs(graph, '0')
+L = [[9,8,7],
+     [6,5,4],
+     [3,2,1]]
 
+
+result = [[0,0,0],
+          [0,0,0],
+          [0,0,0]]
+
+
+print("K is ", K)
+print("K of 1,2 is ", K[1][2])
+
+
+for i in range(len(K)):
+    for j in range(len(K[0])):
+        #result[i][j] = K[i][j] * L[i][j]
+        #result[i][j] = K[i][j] + L[i][j]
+        result[i][j] = K[i][j] - L[i][j]
+        
+        
+for r in result:
+    print(r)
+
+str1 = "KamaK"
+str2 = reversed(str1)
+print(list(reversed(str1)))
+
+if list(str1) == list(str2):
+    print("its same")
     
+import numpy as np
+arr = np.array([[1,2,3],[4,5,6]],dtype=complex)
+
+arr1= np.array([[1,2,3],[4,5,6]],dtype=int)
+arr2 = arr * arr1
+arr3 = arr2.transpose()
+
+
+print(arr2)
+print(arr3)
+
+arr4 = arr3[1][-1]
+
+print(arr4)
+
+arr5 = arr3[1] # 2 row
+arr5 = arr3[:1,] # 1 row all column
+arr5 = arr3[:,1] # 1 column
+arr5 = arr3[:1,:2] # 1 row 2 column
+
+print(arr5)
+'''
+                    A
+                /    \
+                B      C
+                /       /
+            D    E    F
+            /\
+            K L
+'''
+graph = {
+    "A":["B","C"],
+    "B":['D','E'],
+    "C":['F'],
+    "D":['K','L'],
+    "E":[],
+    "F":[],
+    "K":[],
+    "L":[]
+}
+print(graph["D"])
+
+
+visited = set()
+
+
+#dfs(graph,start,node):
+#    if node not in visited:
+#        visted.append(node)
+        
+
+
+def dfs(visited,graph,node):
+    if node not in visited:
+        print(visited)  
+        visited.add(node)
+        
+        for neigh in graph[node]:
+            dfs(visited,graph,neigh)
+        
+dfs(visited,graph,'A')
+
+grid1 = [
+  ["1","1","1","1","0"],
+  ["1","1","0","1","0"],
+  ["1","1","0","0","0"],
+  ["0","0","0","0","0"]
+]
+
+grid2 = grid1
+
+
+count = 0
+
+class Solution():
+    
+
+                        
+    def dfssol(self,grid,i,j):
+        
+        if i < 0 or j < 0 or grid[i][j] != '1' or i >= len(grid) or j >= len(grid[0]):
+            return
+        #print("Hello")
+        grid[i][j] = '#'
+        #print("grid",grid[i][j])
+        self.dfssol(grid,i+1,j)
+        self.dfssol(grid,i-1,j)
+        self.dfssol(grid,i,j+1)
+        self.dfssol(grid,i,j-1)
+        
+    def number_of_island(self,grid):
+        global clount
+        
+        for i in range(len(grid)):
+            for j in range(len(grid[0])):
+                #print(grid[i][j])
+                if grid[i][j] == '1':
+                    global count
+                    self.dfssol(grid,i,j)
+                    count += 1
+                    print("total count is ", count)
+        
+if __name__ == '__main__':
+    P = Solution()
+    P.number_of_island(grid2)
+    
+    res = np.zeros([4,5],dtype = str)
+    
+    for i in range(len(grid2)):
+        for j in range(len(grid2[0])):
+            res[i][j] = grid2[i][j]
+    
+    for r in res:
+        print("r is ",r)
