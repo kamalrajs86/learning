@@ -416,3 +416,76 @@ if __name__ == '__main__':
     
     for r in res:
         print("r is ",r)
+        
+exp = ['2200','2350','2600','2130','2190']
+
+
+i=0
+for i in range(len(exp[0])+1):
+    print("expe is", exp[i])
+
+exp = [2200,2350,2600,2130,2190]
+
+extra = exp[1]-exp[0]
+print("{} spent extra".format(extra)) 
+
+print("first3 = ", exp[0]+exp[1]+exp[2])
+print("exact 2 months = ", 2000 in exp)
+
+heros=['spider man','thor','hulk','iron man','captain america']
+#1. Length of the list
+print(len(heros))
+#2. Add 'black panther' at the end of this list
+heros.append('black panther')
+print("#2", heros)
+#3. You realize that you need to add 'black panther' after 'hulk',
+#   so remove it from the list first and then add it after 'hulk'
+heros.insert(3,'black panther')
+print("#3", heros)
+
+#4. Now you don't like thor and hulk because they get angry easily :)
+#   So you want to remove thor and hulk from list and replace them with doctor strange (because he is cool).
+#   Do that with one line of code.
+heros[1:3] = 'doctor strange'
+
+#5. Sort the heros list in alphabetical order (Hint. Use dir() functions to list down all functions available in list)
+print(dir(heros))
+
+#odd = int(input("Enter max number is"))
+odd = 10
+print("odd is", odd)
+
+odd_l = []
+
+for i in range(odd+1):
+    if i % 2 == 0:
+        pass
+    else:
+        odd_l.append(i)
+
+print("odd list ", odd_l)
+
+
+from collections import deque
+
+class QueC:
+    def __init__(self):
+        self.pil = deque()
+    
+    def addq(self,value):
+        self.pil.appendleft(value)
+        
+    def deq(self):
+        self.pil.pop()
+        
+    
+    
+if __name__ == "__main__":
+    pr = QueC()
+    pr.addq(200)
+    pr.addq(500)
+    print(pr.deq())
+    
+    
+    
+        
